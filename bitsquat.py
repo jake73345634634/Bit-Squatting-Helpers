@@ -11,13 +11,13 @@ class BitSquat:
 		self.args = self.parse_arguments()
 	
 	def parse_arguments(self):
-		parser = ArgumentParser(description="Generate a list of domain names with each bit flipped respectively.")
+		parser = ArgumentParser(description="Generate a list of domains that differ by a single bit and query GoDaddy to check the availability.")
 
 		required = parser.add_argument_group("required arguments")
 		required.add_argument("--api-key", help="a GoDaddy production API key", required=True)
 		required.add_argument("--domain", help="the domain to bitsquat", required=True)
 
-		parser.add_argument("--available", help="only show available domains", action="store_true")
+		parser.add_argument("--verbose", help="show non-available domains too", action="store_true")
 
 		return parser.parse_args()
 
@@ -48,7 +48,7 @@ class BitSquat:
 
 		return request
 
-	def get_domains(self, domain):
+	def run(self, domain):
 		domains_binary = []
 
 		hostname, tld = domain.split(".", 1)
@@ -78,23 +78,20 @@ class BitSquat:
 
 				domain_str += chr(decimal_data)
 
-			request = self.check_availability(domain_str + f".{tld}")
+			request = self.check_availability(f"{domain_str}.{tld}")
 
 			if request.status_code == 200:
 				if request.json()["available"]:
-					print(f"{'' if self.args.available else '[+] '}{domain_str}.{tld}")
+					print(f"[+] {domain_str}.{tld}")
 				else:
-					if not self.args.available:
+					if self.args.verbose:
 						print(f"[-] {domain_str}.{tld}")
 			else:
-				if not self.args.available:
+				if self.args.verbose:
 					print(f"[!] {domain_str}.{tld} - {request.json()['code']}")
 
 			time.sleep(1)
 	
-	def run(self):
-		self.get_domains(self.args.domain)
-
 try:
 	BitSquat().run()
 except KeyboardInterrupt:
