@@ -1,4 +1,3 @@
-
 <h3>🐬 Bit Squatting Helpers</h3>
 <p>
   <a href="https://en.wikipedia.org/wiki/Bitsquatting">Wikipedia</a> •
